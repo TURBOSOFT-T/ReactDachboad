@@ -3,19 +3,24 @@ import DashboardHeader from "../DashboardHeader";
 import { calculateRange, sliceData } from "../../utils/table-pagination";
 import axios from "axios";
 import { Button, Col, Container, Row, Table } from "react-bootstrap";
+import { useQuery } from "react-query";
 
+async function fetchItems() {
+  const { data } = await axios.get("http://localhost:3000/api/item/find-all");
+  return data;
+}
 const ListItemComponent = () => {
   const [items, setItems] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState([]);
 
+  const { data } = useQuery("items", fetchItems);
   useEffect(() => {
-    axios.get("http://localhost:3000/api/item/find-all").then((res) => {
-      setItems(res.data);
-      setPagination(calculateRange(res.data, 5));
-      setItems(sliceData(res.data, page, 5));
-    });
+    setItems(data);
+    setPagination(calculateRange(data, 5));
+    setItems(sliceData(data, page, 5));
+
   }, []);
 
   const __handleSearch = (event) => {

@@ -16,7 +16,7 @@ function Orders () {
     const [pagination, setPagination] = useState([]);
 
     useEffect(() => {
-        setPagination(calculateRange(all_orders, 5));
+       setPagination(calculateRange(all_orders, 5));
         setOrders(sliceData(all_orders, page, 5));
     }, []);
 

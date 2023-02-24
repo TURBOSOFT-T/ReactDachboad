@@ -4,20 +4,30 @@ import { calculateRange, sliceData } from "../../utils/table-pagination";
 import axios from "axios";
 import { Button, Col, Container, Row, Table } from "react-bootstrap";
 
+import { useQuery } from "react-query";
+
+async function fetchInsurances() {
+  const { data } = await axios.get(
+    "http://localhost:3000/api/insurance/find-all"
+  );
+  return data;
+}
+
 const ListInsuranceComponent = () => {
   const [insurances, setInsurances] = useState([]);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [pagination, setPagination] = useState([]);
 
+  const { data } = useQuery("insurances", fetchInsurances);
+
   useEffect(() => {
-    axios.get("http://localhost:3000/api/insurance/find-all").then((res) => {
-      setInsurances(res.data);
-      setPagination(calculateRange(res.data, 5));
-      setInsurances(sliceData(res.data, page, 5));
-    });
+    setInsurances(data);
+    setPagination(calculateRange(data, 5));
+    setInsurances(sliceData(data, page, 5));
   }, []);
 
+  
   const __handleSearch = (event) => {
     setSearch(event.target.value);
     if (event.target.value !== "") {
@@ -39,6 +49,7 @@ const ListInsuranceComponent = () => {
 
       setInsurances(sliceData(res.data, new_page, 5));
     });
+
     setPage(new_page);
 
     setInsurances(sliceData(insurances, new_page, 5));
@@ -57,7 +68,7 @@ const ListInsuranceComponent = () => {
         });
 
       window.location.reload();
-      window.location.href = "/insurances";
+      // window.location.href = "/insurances";
     }
   };
 

@@ -3,27 +3,26 @@ import DashboardHeader from "../DashboardHeader";
 import { calculateRange, sliceData } from "../../utils/table-pagination";
 import axios from "axios";
 import { Button, Col, Container, Row, Table } from "react-bootstrap";
+import { useMutation, useQuery } from "react-query";
+import "./ListOrderComponent.css";
 
-
-
-
-
-
+async function fetchOrders() {
+  const { data } = await axios.get("http://localhost:3000/api/order/find-all");
+  return data;
+}
 
 const ListOrderComponent = () => {
-
   const [orders, setOrders] = useState("");
-  
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [pagination, setPagination] = useState("");
+  const [pagination, setPagination] = useState([]);
+
+  const { data } = useQuery("orders", fetchOrders);
 
   useEffect(() => {
-    axios.get("http://localhost:3000/api/order/find-all").then((res) => {
-      setOrders(res.data);
-      setPagination(calculateRange(res.data, 5));
-      setOrders(sliceData(res.data, page, 5));
-    });
+    setOrders(data);
+    setPagination(calculateRange(data, 5));
+    setOrders(sliceData(data, page, 5));
   }, []);
 
   const __handleSearch = (event) => {
@@ -31,9 +30,10 @@ const ListOrderComponent = () => {
     if (event.target.value !== "") {
       let search_results = orders.filter(
         (item) =>
-        item.quantity.toLowerCase().includes(event.target.value.toLowerCase()) ||
-        item.price.toLowerCase().includes(event.target.value.toLowerCase()) 
-          
+          item.quantity
+            .toLowerCase()
+            .includes(event.target.value.toLowerCase()) ||
+          item.price.toLowerCase().includes(event.target.value.toLowerCase())
       );
       setOrders(search_results);
     } else {
@@ -53,7 +53,7 @@ const ListOrderComponent = () => {
     setOrders(sliceData(orders, new_page, 5));
   };
 
-  const deleteOrder = async (id) => {
+  const deleteOrder = useMutation(async (id) => {
     const isConfirm = window.confirm(
       "Are you sure you want to delete this order?"
     );
@@ -64,11 +64,13 @@ const ListOrderComponent = () => {
           console.log(res.data);
           setOrders(orders.filter((order) => order._id !== id));
         });
-
-      window.location.reload();
-      window.location.href = "/order";
     }
-  };
+
+    window.location.reload();
+    window.location.href = "/order";
+  });
+
+
 
   return (
     <div className="dashboard-content">
@@ -131,7 +133,7 @@ const ListOrderComponent = () => {
                           variant="danger"
                           type="button"
                           onClick={() => {
-                            deleteOrder(order.id);
+                            deleteOrder.mutate(order.id);
                           }}
                         >
                           Delete
