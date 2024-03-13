@@ -1,45 +1,113 @@
-import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-
-import SideBar from "./components/Sidebar";
-import sidebar_menu from "./constants/sidebar-menu";
-import ListInsuranceComponent from "./components/insurance/ListInsuranceComponent";
-import CreateInsuranceComponent from "./components/insurance/CreateInsuranceComponent";
-import ListOrderComponent from "./components/order/ListOrderComponent";
-
 import "./App.css";
-import Orders from "./pages/Orders";
-import ListItemComponent from "./components/items/ListItemComponent";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import {
+  LoginPage,
+  SignupPage,
+  ActivationPage,
+  ProductsPage,
+  ProductDetailsPage,
+  CheckoutPage,
+  BestSellingPage,
+  EventsPage,
+  FAQPage,
+  HomePage,
+  ProfilePage,
+  ShopCreatePage,
+  SellerActivationPage,
+  ShopLoginPage,
+  ForgotPasswordPage,
+} from "./routes/Routes";
+import { ShopDashboardPage, ShopCreateProduct } from "./routes/ShopRoutes";
+import "react-toastify/dist/ReactToastify.css";
+import ProtectedRoute from "./routes/ProtectedRoute";
+import { useEffect } from "react";
+import { ShopHomePage } from "./ShopRoutes.js";
+import SellerProtectedRoute from "./routes/SellerProtectedRoute";
+import Store from "./redux/store";
+import { loadSeller, loadUser } from "./redux/actions/user";
+import { ToastContainer } from "react-toastify";
 
 function App() {
+  useEffect(() => {
+    Store.dispatch(loadUser());
+    Store.dispatch(loadSeller());
+
+    //  Store.dispatch(getAllProducts());
+    // Store.dispatch(getAllEvents());
+  }, []);
+
   return (
-    <Router>
-      <div className="dashboard-container">
-        <SideBar menu={sidebar_menu} />
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/signup" element={<SignupPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
 
-        <div className="dashboard-body">
-          <Routes>
-            <Route path="*" element={<div></div>} />
-            <Route exact path="/" element={<div></div>} />
-            <Route exact path="/order" element={<ListOrderComponent />} />
-            <Route
-              exact
-              path="/insurances"
-              element={<ListInsuranceComponent />}
-            ></Route>
-            <Route exact path="/items" element={<ListItemComponent />} />
+        <Route
+          path="/activation/:activation_token"
+          element={<ActivationPage />}
+        />
+        <Route
+          path="/seller/activation/:activation_token"
+          element={<SellerActivationPage />}
+        />
+        <Route path="/products" element={<ProductsPage />} />
+        <Route path="/product/:name" element={<ProductDetailsPage />} />
+        <Route path="/best-selling" element={<BestSellingPage />} />
+        <Route path="/events" element={<EventsPage />} />
+        <Route path="/faq" element={<FAQPage />} />
+        <Route
+          path="/checkout"
+          element={
+            <ProtectedRoute>
+              <CheckoutPage />
+            </ProtectedRoute>
+          }
+        />
+        {/* shop Routes */}
+        <Route path="/shop-create" element={<ShopCreatePage />} />
+        <Route path="/shop-login" element={<ShopLoginPage />} />
+        <Route
+          path="/shop/:id"
+          element={
+            <SellerProtectedRoute>
+              <ShopHomePage />
+            </SellerProtectedRoute>
+          }
+        />
+        <Route
+          path="/dashboard-create-product"
+          element={
+            <SellerProtectedRoute>
+              <ShopCreateProduct />
+            </SellerProtectedRoute>
+          }
+        />
 
-            <Route
-              path="/add-insurance/"
-              exact
-              element={<CreateInsuranceComponent />}
-            ></Route>
-            <Route exact path="/locations" element={<div></div>} />
-            <Route exact path="/profile" element={<div></div>} />
-          </Routes>
-        </div>
-      </div>
-    </Router>
+        <Route
+          path="/dashboard"
+          element={
+            <SellerProtectedRoute>
+              <ShopDashboardPage />
+            </SellerProtectedRoute>
+          }
+        />
+      </Routes>
+      <ToastContainer
+        position="bottom-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="dark"
+      />
+    </BrowserRouter>
   );
 }
 
